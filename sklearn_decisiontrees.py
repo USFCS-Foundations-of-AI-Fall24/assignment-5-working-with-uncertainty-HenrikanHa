@@ -1,7 +1,6 @@
 
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_iris, load_wine
 from sklearn import tree
-from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, KFold
@@ -24,6 +23,45 @@ for train_index, test_index in kf.split(X) :
 
 print(scores)
 
+print("\nPart 1:")
+print("More complex dataset")
+wine = load_wine()
+X, y = wine.data, wine.target
+scores = []
+kf = KFold(n_splits=5)
+for train_index, test_index in kf.split(X) :
+    X_train, X_test, y_train, y_test = \
+        (X[train_index], X[test_index], y[train_index], y[test_index])
+    clf = tree.DecisionTreeClassifier()
+    clf.fit(X_train, y_train)
+    scores.append(clf.score(X_test, y_test))
+
+print(scores)
+
+# Part 2
+print("\nPart 2:")
+n_estimators_list = [10, 25, 50]
+criteria = ["gini", "entropy"]
+results = []
+kf = KFold(n_splits=5)
+for criterion in criteria :
+    for n_estimators in n_estimators_list :
+        scores = []
+        for train_index, test_index in kf.split(X) :
+            X_train, X_test, y_train, y_test = \
+                (X[train_index], X[test_index], y[train_index], y[test_index])
+            clf = RandomForestClassifier(n_estimators=n_estimators, criterion=criterion, random_state=0)
+            clf.fit(X_train, y_train)
+            scores.append(clf.score(X_test, y_test))
+
+        results.append({
+            "n_estimators": n_estimators,
+            "criterion": criterion,
+            "mean_accuracy": sum(scores) / len(scores)
+        })
+results_df = pd.DataFrame(results)
+print(results_df)
+
 ## Part 2. This code (from https://scikit-learn.org/1.5/auto_examples/ensemble/plot_forest_hist_grad_boosting_comparison.html)
 ## shows how to use GridSearchCV to do a hyperparameter search to compare two techniques.
 from sklearn.datasets import load_breast_cancer
@@ -42,10 +80,10 @@ models = {
     ),
 }
 param_grids = {
-    "Random Forest": {"n_estimators": [10, 20, 50, 100]},
-    "Hist Gradient Boosting": {"max_iter": [10, 20, 50, 100, 300, 500]},
+    "Random Forest": {"n_estimators": [5, 10, 15, 20]},
+    "Hist Gradient Boosting": {"max_iter": [25, 50, 75, 100]},
 }
-cv = KFold(n_splits=2, shuffle=True, random_state=0)
+cv = KFold(n_splits=5, shuffle=True, random_state=0)
 
 results = []
 for name, model in models.items():
@@ -58,7 +96,9 @@ for name, model in models.items():
     result = {"model": name, "cv_results": pd.DataFrame(grid_search.cv_results_)}
     results.append(result)
 
-print(results)
+for result in results:
+    print(f"Model: {result['model']}")
+    print(result['cv_results'])
 
 #### Part 3: This shows how to generate a scatter plot of your results
 
