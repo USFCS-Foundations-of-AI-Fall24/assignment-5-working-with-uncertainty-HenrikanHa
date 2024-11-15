@@ -1,7 +1,7 @@
 from unittest import TestCase
 from HMM import *
 
-class Test(TestCase):
+class TestHMM(TestCase):
     def test_load(self):
         h = HMM()
         h.load('cat')
