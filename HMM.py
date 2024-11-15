@@ -143,7 +143,7 @@ class HMM:
             for state in state_values:
                 if state != '#':
                     E_emit = self.emissions[state].get(sequence[t - 1], 0.0)
-                    max_val = 0.0
+                    max_val = float('-inf')
                     best_prev_state = 0
 
                     for state2 in state_values:
